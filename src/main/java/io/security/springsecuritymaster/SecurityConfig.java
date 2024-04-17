@@ -19,10 +19,16 @@ public class SecurityConfig {
     http.authorizeHttpRequests(auth -> auth
             .anyRequest().authenticated())
         .formLogin(Customizer.withDefaults())
-        .sessionManagement(session -> session
-            .maximumSessions(2)
-            .maxSessionsPreventsLogin(false)
-        );
+        .exceptionHandling(exception -> exception
+//            .authenticationEntryPoint((request, response, authException) -> {
+//                  System.out.println("authException = " + authException.getMessage());
+//                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                  System.out.println(
+                      "accessDeniedException = " + accessDeniedException.getMessage());
+                })
+        )
+    ;
 
     return http.build();
   }
