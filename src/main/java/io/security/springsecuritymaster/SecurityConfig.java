@@ -8,6 +8,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @EnableWebSecurity
 @Configuration
@@ -19,18 +23,24 @@ public class SecurityConfig {
     http.authorizeHttpRequests(auth -> auth
             .anyRequest().authenticated())
         .formLogin(Customizer.withDefaults())
-        .exceptionHandling(exception -> exception
-//            .authenticationEntryPoint((request, response, authException) -> {
-//                  System.out.println("authException = " + authException.getMessage());
-//                })
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                  System.out.println(
-                      "accessDeniedException = " + accessDeniedException.getMessage());
-                })
+        .csrf(csrf -> csrf
+            .csrfTokenRequestHandler(new XorCsrfTokenRequestAttributeHandler())
         )
     ;
 
     return http.build();
+  }
+
+  private CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.addAllowedOrigin("https://example.com");
+    configuration.addAllowedMethod("GET");
+    configuration.addAllowedMethod("POST");
+    configuration.setAllowCredentials(true);
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+
+    return source;
   }
 
   @Bean
