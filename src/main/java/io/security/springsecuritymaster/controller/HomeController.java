@@ -1,4 +1,4 @@
-package io.security.springsecuritymaster;
+package io.security.springsecuritymaster.controller;
 
 
 import org.springframework.stereotype.Controller;
