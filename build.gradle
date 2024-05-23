@@ -16,12 +16,16 @@ repositories {
 }
 
 dependencies {
-    //spring-web, security
+    //spring-web, security, jpa
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     //thymeleaf
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: '3.2.2'
+
+    //modelmapper
+    implementation 'org.modelmapper:modelmapper:3.1.0'
 
     //lombok
     compileOnly 'org.projectlombok:lombok'
@@ -29,6 +33,8 @@ dependencies {
 
     //postgres
     runtimeOnly 'org.postgresql:postgresql'
+    //h2
+    runtimeOnly 'com.h2database:h2'
 
     //test lombok
     testCompileOnly 'org.projectlombok:lombok'
