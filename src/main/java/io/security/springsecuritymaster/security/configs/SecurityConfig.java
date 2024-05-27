@@ -1,20 +1,21 @@
-package io.security.springsecuritymaster.configs;
+package io.security.springsecuritymaster.security.configs;
 
+import io.security.springsecuritymaster.security.service.FormUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+@RequiredArgsConstructor
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
+
+  private final FormUserDetailsService formUserDetailsService;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -27,6 +28,7 @@ public class SecurityConfig {
         .formLogin(form -> form
             .loginPage("/login").permitAll()
         )
+        .userDetailsService(formUserDetailsService)
     ;
 
     return http.build();
@@ -35,14 +37,5 @@ public class SecurityConfig {
   @Bean
   public PasswordEncoder passwordEncoder() {
     return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-  }
-
-  @Bean
-  public UserDetailsService userDetailsService() {
-    UserDetails userDetails = User.withUsername("user")
-        .password("{noop}1111")
-        .roles("USER")
-        .build();
-    return new InMemoryUserDetailsManager(userDetails);
   }
 }
