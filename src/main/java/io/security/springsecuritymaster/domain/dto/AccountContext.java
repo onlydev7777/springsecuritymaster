@@ -2,10 +2,12 @@ package io.security.springsecuritymaster.domain.dto;
 
 import java.util.Collection;
 import java.util.List;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+@Getter
 @RequiredArgsConstructor
 public class AccountContext implements UserDetails {
 
