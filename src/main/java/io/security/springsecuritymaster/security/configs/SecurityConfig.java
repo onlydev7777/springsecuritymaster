@@ -1,6 +1,7 @@
 package io.security.springsecuritymaster.security.configs;
 
 import io.security.springsecuritymaster.security.details.FormAuthenticationDetailsSource;
+import io.security.springsecuritymaster.security.handler.FormAuthenticationFailureHandler;
 import io.security.springsecuritymaster.security.handler.FormAuthenticationSuccessHandler;
 import io.security.springsecuritymaster.security.provider.FormAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
@@ -18,19 +19,22 @@ public class SecurityConfig {
   private final FormAuthenticationProvider formAuthenticationProvider;
   private final FormAuthenticationDetailsSource formAuthenticationDetailsSource;
   private final FormAuthenticationSuccessHandler formAuthenticationSuccessHandler;
+  private final FormAuthenticationFailureHandler formAuthenticationFailureHandler;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/css/**", "/images/**", "/js/**", "/favicon.*", "/*/icon-*").permitAll()
-            .requestMatchers("/", "/signup").permitAll()
+            .requestMatchers("/", "/signup", "/login*").permitAll()
             .anyRequest().authenticated()
         )
         .formLogin(form -> form
-            .loginPage("/login").permitAll()
+            .loginPage("/login")
             .authenticationDetailsSource(formAuthenticationDetailsSource)
             .successHandler(formAuthenticationSuccessHandler)
+            .failureHandler(formAuthenticationFailureHandler)
+            .permitAll()
         )
         .authenticationProvider(formAuthenticationProvider)
     ;
