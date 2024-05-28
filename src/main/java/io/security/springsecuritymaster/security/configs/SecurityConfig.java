@@ -1,6 +1,7 @@
 package io.security.springsecuritymaster.security.configs;
 
 import io.security.springsecuritymaster.security.details.FormAuthenticationDetailsSource;
+import io.security.springsecuritymaster.security.handler.FormAccessDeniedHandler;
 import io.security.springsecuritymaster.security.handler.FormAuthenticationFailureHandler;
 import io.security.springsecuritymaster.security.handler.FormAuthenticationSuccessHandler;
 import io.security.springsecuritymaster.security.provider.FormAuthenticationProvider;
@@ -27,6 +28,9 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/css/**", "/images/**", "/js/**", "/favicon.*", "/*/icon-*").permitAll()
             .requestMatchers("/", "/signup", "/login*").permitAll()
+            .requestMatchers("/user").hasAuthority("ROLE_USER")
+            .requestMatchers("/manager").hasAuthority("ROLE_MANAGER")
+            .requestMatchers("/admin").hasAuthority("ROLE_ADMIN")
             .anyRequest().authenticated()
         )
         .formLogin(form -> form
@@ -37,6 +41,9 @@ public class SecurityConfig {
             .permitAll()
         )
         .authenticationProvider(formAuthenticationProvider)
+        .exceptionHandling(exception -> exception
+            .accessDeniedHandler(new FormAccessDeniedHandler("/denied"))
+        )
     ;
 
     return http.build();
