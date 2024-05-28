@@ -1,6 +1,7 @@
 package io.security.springsecuritymaster.security.configs;
 
 import io.security.springsecuritymaster.security.details.FormAuthenticationDetailsSource;
+import io.security.springsecuritymaster.security.handler.FormAuthenticationSuccessHandler;
 import io.security.springsecuritymaster.security.provider.FormAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,7 @@ public class SecurityConfig {
 
   private final FormAuthenticationProvider formAuthenticationProvider;
   private final FormAuthenticationDetailsSource formAuthenticationDetailsSource;
+  private final FormAuthenticationSuccessHandler formAuthenticationSuccessHandler;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -28,6 +30,7 @@ public class SecurityConfig {
         .formLogin(form -> form
             .loginPage("/login").permitAll()
             .authenticationDetailsSource(formAuthenticationDetailsSource)
+            .successHandler(formAuthenticationSuccessHandler)
         )
         .authenticationProvider(formAuthenticationProvider)
     ;
