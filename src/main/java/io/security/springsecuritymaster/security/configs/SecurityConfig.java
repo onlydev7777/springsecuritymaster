@@ -8,8 +8,10 @@ import io.security.springsecuritymaster.security.provider.FormAuthenticationProv
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
 @RequiredArgsConstructor
@@ -44,6 +46,22 @@ public class SecurityConfig {
         .exceptionHandling(exception -> exception
             .accessDeniedHandler(new FormAccessDeniedHandler("/denied"))
         )
+    ;
+
+    return http.build();
+  }
+
+  @Bean
+  @Order(1)
+  public SecurityFilterChain restSecurityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .securityMatcher("/api/**")
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/css/**", "/images/**", "/js/**", "/favicon.*", "/*/icon-*").permitAll()
+            .anyRequest().permitAll()
+        )
+        .authenticationProvider(formAuthenticationProvider)
+        .csrf(AbstractHttpConfigurer::disable)
     ;
 
     return http.build();
