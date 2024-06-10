@@ -1,6 +1,7 @@
 package io.security.springsecuritymaster.security.configs;
 
 import io.security.springsecuritymaster.security.details.FormAuthenticationDetailsSource;
+import io.security.springsecuritymaster.security.filters.RestAuthenticationFilter;
 import io.security.springsecuritymaster.security.handler.FormAccessDeniedHandler;
 import io.security.springsecuritymaster.security.handler.FormAuthenticationFailureHandler;
 import io.security.springsecuritymaster.security.handler.FormAuthenticationSuccessHandler;
@@ -9,10 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -54,16 +58,26 @@ public class SecurityConfig {
   @Bean
   @Order(1)
   public SecurityFilterChain restSecurityFilterChain(HttpSecurity http) throws Exception {
+
+    AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+    AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
+
     http
         .securityMatcher("/api/**")
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/css/**", "/images/**", "/js/**", "/favicon.*", "/*/icon-*").permitAll()
             .anyRequest().permitAll()
         )
-        .authenticationProvider(formAuthenticationProvider)
         .csrf(AbstractHttpConfigurer::disable)
+        .addFilterBefore(restAuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+        .authenticationManager(authenticationManager)
     ;
 
     return http.build();
+  }
+
+
+  private RestAuthenticationFilter restAuthenticationFilter(AuthenticationManager authenticationManager) {
+    return new RestAuthenticationFilter(authenticationManager);
   }
 }
