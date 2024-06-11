@@ -14,6 +14,8 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.StringUtils;
 
@@ -21,9 +23,12 @@ public class RestAuthenticationFilter extends AbstractAuthenticationProcessingFi
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public RestAuthenticationFilter(AuthenticationManager authenticationManager) {
+  public RestAuthenticationFilter(AuthenticationManager authenticationManager, AuthenticationSuccessHandler restAuthenticationSuccessHandler,
+      AuthenticationFailureHandler restAuthenticationFailureHandler) {
     super(new AntPathRequestMatcher("/api/login", "POST"));
     setAuthenticationManager(authenticationManager);
+    setAuthenticationSuccessHandler(restAuthenticationSuccessHandler);
+    setAuthenticationFailureHandler(restAuthenticationFailureHandler);
   }
 
   @Override
