@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 <head>
   <title>Dashboard</title>
   <link rel="stylesheet"
@@ -103,11 +105,15 @@
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
 
+      const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+      const csrfToken = $('meta[name="_csrf"]').attr('content')
+
       fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
+          'X-Requested-With': 'XMLHttpRequest',
+          [csrfHeader]: csrfToken
         },
         body: JSON.stringify({username, password}),
       })
