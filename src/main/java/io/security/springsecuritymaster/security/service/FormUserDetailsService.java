@@ -5,6 +5,7 @@ import io.security.springsecuritymaster.domain.dto.AccountDto;
 import io.security.springsecuritymaster.domain.entity.Account;
 import io.security.springsecuritymaster.users.repository.UserRepository;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.GrantedAuthority;
@@ -30,7 +31,13 @@ public class FormUserDetailsService implements UserDetailsService {
     ModelMapper modelMapper = new ModelMapper();
     AccountDto accountDto = modelMapper.map(account, AccountDto.class);
 
-    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(accountDto.getRoles()));
+    List<GrantedAuthority> authorities = account.getAccountRoleList()
+        .stream()
+        .map(accountRole -> accountRole.getRole().getRoleName())
+        .collect(Collectors.toSet())
+        .stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+
+//    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(accountDto.getRoles()));
 
     return new AccountContext(accountDto, authorities);
   }

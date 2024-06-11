@@ -1,5 +1,6 @@
 package io.security.springsecuritymaster.domain.dto;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,5 +16,5 @@ public class AccountDto {
   private String username;
   private String password;
   private int age;
-  private String roles;
+  private List<String> roles;
 }
