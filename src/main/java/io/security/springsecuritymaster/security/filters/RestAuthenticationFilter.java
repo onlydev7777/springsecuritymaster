@@ -31,6 +31,10 @@ public class RestAuthenticationFilter extends AbstractAuthenticationProcessingFi
     setAuthenticationFailureHandler(restAuthenticationFailureHandler);
   }
 
+  public RestAuthenticationFilter() {
+    super(new AntPathRequestMatcher("/api/login", "POST"));
+  }
+
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
       throws AuthenticationException, IOException, ServletException {

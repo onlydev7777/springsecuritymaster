@@ -1,7 +1,7 @@
 package io.security.springsecuritymaster.security.configs;
 
+import io.security.springsecuritymaster.security.dsl.RestApiDsl;
 import io.security.springsecuritymaster.security.entrypoint.RestAuthenticationEntryPoint;
-import io.security.springsecuritymaster.security.filters.RestAuthenticationFilter;
 import io.security.springsecuritymaster.security.handler.FormAccessDeniedHandler;
 import io.security.springsecuritymaster.security.handler.FormAuthenticationFailureHandler;
 import io.security.springsecuritymaster.security.handler.FormAuthenticationSuccessHandler;
@@ -21,12 +21,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
-import org.springframework.security.web.context.DelegatingSecurityContextRepository;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
-import org.springframework.security.web.context.SecurityContextRepository;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -76,12 +71,12 @@ public class SecurityConfig {
     authenticationManagerBuilder.authenticationProvider(restAuthenticationProvider);
     AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
 
-    SecurityContextRepository securityContextRepository = http.getSharedObject(SecurityContextRepository.class);
-    if (securityContextRepository == null) {
-      securityContextRepository = new DelegatingSecurityContextRepository(
-          new RequestAttributeSecurityContextRepository(), new HttpSessionSecurityContextRepository()
-      );
-    }
+//    SecurityContextRepository securityContextRepository = http.getSharedObject(SecurityContextRepository.class);
+//    if (securityContextRepository == null) {
+//      securityContextRepository = new DelegatingSecurityContextRepository(
+//          new RequestAttributeSecurityContextRepository(), new HttpSessionSecurityContextRepository()
+//      );
+//    }
 
     http
         .securityMatcher("/api/**")
@@ -94,23 +89,26 @@ public class SecurityConfig {
             .anyRequest().authenticated()
         )
 //        .csrf(AbstractHttpConfigurer::disable)
-        .addFilterBefore(restAuthenticationFilter(authenticationManager, securityContextRepository), UsernamePasswordAuthenticationFilter.class)
+//        .addFilterBefore(restAuthenticationFilter(authenticationManager, securityContextRepository), UsernamePasswordAuthenticationFilter.class)
         .authenticationManager(authenticationManager)
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint(new RestAuthenticationEntryPoint())
             .accessDeniedHandler(new RestAccessDeniedHandler())
         )
+        .with(new RestApiDsl<>(), restApiDsl -> restApiDsl
+            .restSuccessHandler(restAuthenticationSuccessHandler)
+            .restFailureHandler(restAuthenticationFailureHandler)
+            .loginProcessingUrl("/api/login"))
     ;
 
     return http.build();
   }
 
-
-  private RestAuthenticationFilter restAuthenticationFilter(AuthenticationManager authenticationManager,
-      SecurityContextRepository securityContextRepository) {
-    RestAuthenticationFilter restAuthenticationFilter = new RestAuthenticationFilter(authenticationManager, restAuthenticationSuccessHandler,
-        restAuthenticationFailureHandler);
-    restAuthenticationFilter.setSecurityContextRepository(securityContextRepository);
-    return restAuthenticationFilter;
-  }
+//  private RestAuthenticationFilter restAuthenticationFilter(AuthenticationManager authenticationManager,
+//      SecurityContextRepository securityContextRepository) {
+//    RestAuthenticationFilter restAuthenticationFilter = new RestAuthenticationFilter(authenticationManager, restAuthenticationSuccessHandler,
+//        restAuthenticationFailureHandler);
+//    restAuthenticationFilter.setSecurityContextRepository(securityContextRepository);
+//    return restAuthenticationFilter;
+//  }
 }
