@@ -2,6 +2,10 @@ package io.security.springsecuritymaster.security.configs;
 
 import io.security.springsecuritymaster.security.filters.RestAuthenticationFilter;
 import io.security.springsecuritymaster.security.handler.FormAccessDeniedHandler;
+import io.security.springsecuritymaster.security.handler.FormAuthenticationFailureHandler;
+import io.security.springsecuritymaster.security.handler.FormAuthenticationSuccessHandler;
+import io.security.springsecuritymaster.security.handler.RestAuthenticationFailureHandler;
+import io.security.springsecuritymaster.security.handler.RestAuthenticationSuccessHandler;
 import io.security.springsecuritymaster.security.provider.FormAuthenticationProvider;
 import io.security.springsecuritymaster.security.provider.RestAuthenticationProvider;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,10 +20,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -29,10 +35,10 @@ public class SecurityConfig {
   private final FormAuthenticationProvider formAuthenticationProvider;
   private final RestAuthenticationProvider restAuthenticationProvider;
   private final AuthenticationDetailsSource<HttpServletRequest, WebAuthenticationDetails> formAuthenticationDetailsSource;
-  private final AuthenticationSuccessHandler formAuthenticationSuccessHandler;
-  private final AuthenticationSuccessHandler restAuthenticationSuccessHandler;
-  private final AuthenticationFailureHandler formAuthenticationFailureHandler;
-  private final AuthenticationFailureHandler restAuthenticationFailureHandler;
+  private final FormAuthenticationSuccessHandler formAuthenticationSuccessHandler;
+  private final RestAuthenticationSuccessHandler restAuthenticationSuccessHandler;
+  private final FormAuthenticationFailureHandler formAuthenticationFailureHandler;
+  private final RestAuthenticationFailureHandler restAuthenticationFailureHandler;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -69,6 +75,13 @@ public class SecurityConfig {
     authenticationManagerBuilder.authenticationProvider(restAuthenticationProvider);
     AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
 
+    SecurityContextRepository securityContextRepository = http.getSharedObject(SecurityContextRepository.class);
+    if (securityContextRepository == null) {
+      securityContextRepository = new DelegatingSecurityContextRepository(
+          new RequestAttributeSecurityContextRepository(), new HttpSessionSecurityContextRepository()
+      );
+    }
+
     http
         .securityMatcher("/api/**")
         .authorizeHttpRequests(auth -> auth
@@ -76,7 +89,7 @@ public class SecurityConfig {
             .anyRequest().permitAll()
         )
         .csrf(AbstractHttpConfigurer::disable)
-        .addFilterBefore(restAuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(restAuthenticationFilter(authenticationManager, securityContextRepository), UsernamePasswordAuthenticationFilter.class)
         .authenticationManager(authenticationManager)
     ;
 
@@ -84,7 +97,11 @@ public class SecurityConfig {
   }
 
 
-  private RestAuthenticationFilter restAuthenticationFilter(AuthenticationManager authenticationManager) {
-    return new RestAuthenticationFilter(authenticationManager, restAuthenticationSuccessHandler, restAuthenticationFailureHandler);
+  private RestAuthenticationFilter restAuthenticationFilter(AuthenticationManager authenticationManager,
+      SecurityContextRepository securityContextRepository) {
+    RestAuthenticationFilter restAuthenticationFilter = new RestAuthenticationFilter(authenticationManager, restAuthenticationSuccessHandler,
+        restAuthenticationFailureHandler);
+    restAuthenticationFilter.setSecurityContextRepository(securityContextRepository);
+    return restAuthenticationFilter;
   }
 }
