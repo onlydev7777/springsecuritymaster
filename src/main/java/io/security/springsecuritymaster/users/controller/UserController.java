@@ -15,14 +15,14 @@ public class UserController {
 
   private final UserService service;
   private final PasswordEncoder passwordEncoder;
+  private final ModelMapper modelMapper;
 
   @PostMapping("/signup")
   public String signup(AccountDto accountDto) {
-    ModelMapper mapper = new ModelMapper();
-    Account account = mapper.map(accountDto, Account.class);
+    Account account = modelMapper.map(accountDto, Account.class);
     account.setPassword(passwordEncoder.encode(account.getPassword()));
     service.createUser(account);
-    
+
     return "redirect:/";
   }
 }

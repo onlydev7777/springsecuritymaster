@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class FormUserDetailsService implements UserDetailsService {
 
   private final UserRepository userRepository;
+  private final ModelMapper modelMapper;
 
   @Transactional(readOnly = true)
   @Override
@@ -28,7 +29,6 @@ public class FormUserDetailsService implements UserDetailsService {
     Account account = userRepository.findByUsername(username)
         .orElseThrow(() -> new UsernameNotFoundException("No user name with " + username));
 
-    ModelMapper modelMapper = new ModelMapper();
     AccountDto accountDto = modelMapper.map(account, AccountDto.class);
 
     List<GrantedAuthority> authorities = account.getAccountRoleList()

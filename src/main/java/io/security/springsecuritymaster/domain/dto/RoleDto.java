@@ -16,7 +16,7 @@ public class RoleDto {
   private String roleDesc;
   private String isExpression;
 
-  public void setIsExpression(boolean expression) {
+  public void convertExpression(boolean expression) {
     this.isExpression = expression ? "Y" : "N";
   }
 }

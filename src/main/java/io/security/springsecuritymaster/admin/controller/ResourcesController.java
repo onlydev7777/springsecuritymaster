@@ -27,7 +27,7 @@ public class ResourcesController {
   private final ResourcesService resourcesService;
   private final RoleRepository roleRepository;
   private final RoleService roleService;
-  private final ModelMapper modelMapper = new ModelMapper();
+  private final ModelMapper modelMapper;
 
   @GetMapping(value = "/admin/resources")
   public String getResources(Model model) {

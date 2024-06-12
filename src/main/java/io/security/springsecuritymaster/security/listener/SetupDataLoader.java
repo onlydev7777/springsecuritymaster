@@ -6,6 +6,7 @@ import io.security.springsecuritymaster.domain.entity.Account;
 import io.security.springsecuritymaster.domain.entity.AccountRole;
 import io.security.springsecuritymaster.domain.entity.Role;
 import io.security.springsecuritymaster.users.repository.UserRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationListener;
@@ -67,10 +68,16 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
   }
 
   public AccountRole createAccountRole(Role role) {
-    AccountRole accountRole = AccountRole.builder()
-        .role(role)
-        .build();
-
-    return accountRoleRepository.save(accountRole);
+    List<AccountRole> findAllByRoleName = accountRoleRepository.findAllByRole_RoleNameIn(List.of(role.getRoleName()));
+    if (findAllByRoleName.isEmpty()) {
+      AccountRole accountRole = AccountRole.builder()
+          .role(role)
+          .build();
+      return accountRoleRepository.save(accountRole);
+    }
+    return findAllByRoleName.stream()
+        .filter(accountRole -> accountRole.getRole().getRoleName().equals(role.getRoleName()))
+        .findFirst()
+        .orElseThrow();
   }
 }

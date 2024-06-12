@@ -21,7 +21,7 @@ public class UserManagementServiceImpl implements UserManagementService {
   private final UserRepository userRepository;
   private final AccountRoleRepository accountRoleRepository;
   private final PasswordEncoder passwordEncoder;
-  private final ModelMapper modelMapper = new ModelMapper();
+  private final ModelMapper modelMapper;
 
   @Override
   public List<Account> getUsers() {
@@ -39,8 +39,18 @@ public class UserManagementServiceImpl implements UserManagementService {
     account.setAge(accountDto.getAge());
     if (accountDto.getRoles() != null) {
       List<AccountRole> allByRoleRoleName = accountRoleRepository.findAllByRole_RoleNameIn(accountDto.getRoles());
-      account.setAccountRoleList(allByRoleRoleName);
+      allByRoleRoleName.forEach(accountRole -> accountRoleRepository.save(
+          createAccountRole(accountRole, account)
+      ));
+//      account.setAccountRoleList(allByRoleRoleName);
     }
+  }
+
+  private AccountRole createAccountRole(AccountRole accountRole, Account account) {
+    return AccountRole.builder()
+        .account(account)
+        .role(accountRole.getRole())
+        .build();
   }
 
   @Override

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class RoleController {
 
   private final RoleService roleService;
+  private final ModelMapper modelMapper;
 
   @GetMapping(value = "/admin/roles")
   public String getRoles(Model model) {
@@ -38,7 +39,6 @@ public class RoleController {
 
   @PostMapping(value = "/admin/roles")
   public String createRole(RoleDto roleDto) {
-    ModelMapper modelMapper = new ModelMapper();
     Role role = modelMapper.map(roleDto, Role.class);
     role.setExpression(roleDto.getIsExpression());
     roleService.createRole(role);
@@ -50,9 +50,8 @@ public class RoleController {
   public String getRole(@PathVariable Long id, Model model) {
     Role role = roleService.getRole(id);
 
-    ModelMapper modelMapper = new ModelMapper();
     RoleDto roleDto = modelMapper.map(role, RoleDto.class);
-    roleDto.setIsExpression(role.isExpression());
+    roleDto.convertExpression(role.isExpression());
     model.addAttribute("roles", roleDto);
 
     return "admin/rolesdetails";
