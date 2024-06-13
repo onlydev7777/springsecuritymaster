@@ -38,6 +38,7 @@ public class SecurityConfig {
   private final FormAuthenticationFailureHandler formAuthenticationFailureHandler;
   private final RestAuthenticationFailureHandler restAuthenticationFailureHandler;
   private final AuthorizationManager<RequestAuthorizationContext> authorizationManager;
+//  private final AuthorizationManager<HttpServletRequest> authorizationManager;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -50,6 +51,7 @@ public class SecurityConfig {
 //            .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
 //            .anyRequest().authenticated()
                 .anyRequest().access(authorizationManager)
+//                .anyRequest().permitAll()
         )
         .formLogin(form -> form
             .loginPage("/login")
@@ -62,6 +64,7 @@ public class SecurityConfig {
         .exceptionHandling(exception -> exception
             .accessDeniedHandler(new FormAccessDeniedHandler("/denied"))
         )
+//        .addFilterAfter(customAuthorizationFilter(), ExceptionTranslationFilter.class)
     ;
 
     return http.build();
@@ -85,12 +88,13 @@ public class SecurityConfig {
     http
         .securityMatcher("/api/**")
         .authorizeHttpRequests(auth -> auth
-//            .requestMatchers("/css/**", "/images/**", "/js/**", "/favicon.*", "/*/icon-*").permitAll()
-//            .requestMatchers("/api", "/api/login").permitAll()
-//            .requestMatchers("/api/user").hasAuthority("ROLE_USER")
-//            .requestMatchers("/api/manager").hasAuthority("ROLE_MANAGER")
-//            .requestMatchers("/api/admin").hasAuthority("ROLE_ADMIN")
-                .anyRequest().access(authorizationManager)
+                .requestMatchers("/css/**", "/images/**", "/js/**", "/favicon.*", "/*/icon-*").permitAll()
+                .requestMatchers("/api", "/api/login").permitAll()
+                .requestMatchers("/api/user").hasAuthority("ROLE_USER")
+                .requestMatchers("/api/manager").hasAuthority("ROLE_MANAGER")
+                .requestMatchers("/api/admin").hasAuthority("ROLE_ADMIN")
+//                .anyRequest().access(authorizationManager)
+                .anyRequest().authenticated()
         )
 //        .csrf(AbstractHttpConfigurer::disable)
 //        .addFilterBefore(restAuthenticationFilter(authenticationManager, securityContextRepository), UsernamePasswordAuthenticationFilter.class)
@@ -108,11 +112,16 @@ public class SecurityConfig {
     return http.build();
   }
 
-//  private RestAuthenticationFilter restAuthenticationFilter(AuthenticationManager authenticationManager,
+  //  private RestAuthenticationFilter restAuthenticationFilter(AuthenticationManager authenticationManager,
 //      SecurityContextRepository securityContextRepository) {
 //    RestAuthenticationFilter restAuthenticationFilter = new RestAuthenticationFilter(authenticationManager, restAuthenticationSuccessHandler,
 //        restAuthenticationFailureHandler);
 //    restAuthenticationFilter.setSecurityContextRepository(securityContextRepository);
 //    return restAuthenticationFilter;
+//  }
+
+//  @Bean
+//  public CustomAuthorizationFilter customAuthorizationFilter() {
+//    return new CustomAuthorizationFilter(authorizationManager);
 //  }
 }
