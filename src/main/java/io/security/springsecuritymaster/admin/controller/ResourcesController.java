@@ -1,6 +1,7 @@
 package io.security.springsecuritymaster.admin.controller;
 
 import io.security.springsecuritymaster.admin.repository.RoleRepository;
+import io.security.springsecuritymaster.admin.repository.RoleResourcesRepository;
 import io.security.springsecuritymaster.admin.service.ResourcesService;
 import io.security.springsecuritymaster.admin.service.RoleService;
 import io.security.springsecuritymaster.domain.dto.ResourcesDto;
@@ -26,6 +27,7 @@ public class ResourcesController {
 
   private final ResourcesService resourcesService;
   private final RoleRepository roleRepository;
+  private final RoleResourcesRepository roleResourcesRepository;
   private final RoleService roleService;
   private final ModelMapper modelMapper;
 
@@ -41,11 +43,16 @@ public class ResourcesController {
   public String createResources(ResourcesDto resourcesDto) {
     Role role = roleRepository.findByRoleName(resourcesDto.getRoleName());
     Resources resources = modelMapper.map(resourcesDto, Resources.class);
-    resources.setRoleResourcesList(role.getRoleResourcesList());
     resources.setHttpMethod(resourcesDto.getHttpMethod());
 
-    resourcesService.createResources(resources);
-
+    Resources savedResources = resourcesService.createResources(resources);
+    roleResourcesRepository.save(
+        RoleResources.builder()
+            .role(role)
+            .resources(savedResources)
+            .build()
+    );
+    
     return "redirect:/admin/resources";
   }
 

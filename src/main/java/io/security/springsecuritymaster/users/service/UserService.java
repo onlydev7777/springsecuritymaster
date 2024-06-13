@@ -1,7 +1,9 @@
 package io.security.springsecuritymaster.users.service;
 
+import io.security.springsecuritymaster.admin.repository.AccountRoleRepository;
 import io.security.springsecuritymaster.admin.repository.RoleRepository;
 import io.security.springsecuritymaster.domain.entity.Account;
+import io.security.springsecuritymaster.domain.entity.AccountRole;
 import io.security.springsecuritymaster.domain.entity.Role;
 import io.security.springsecuritymaster.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,12 +16,18 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final RoleRepository roleRepository;
+  private final AccountRoleRepository accountRoleRepository;
 
   @Transactional
   public void createUser(Account account) {
-    Role role = roleRepository.findByRoleName("ROLE_USER");
-    account.setAccountRoleList(role.getAccountRoleList());
-    userRepository.save(account);
+    Role roleUser = roleRepository.findByRoleName("ROLE_USER");
+    Account savedAccount = userRepository.save(account);
+    accountRoleRepository.save(
+        AccountRole.builder()
+            .role(roleUser)
+            .account(savedAccount)
+            .build()
+    );
   }
 
 }

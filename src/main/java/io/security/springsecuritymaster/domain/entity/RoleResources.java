@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,6 +30,12 @@ public class RoleResources {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "role_id")
   private Role role;
+
+  @Builder
+  public RoleResources(Resources resources, Role role) {
+    this.resources = resources;
+    this.role = role;
+  }
 
   public void mapResources(Resources resources) {
     this.resources = resources;

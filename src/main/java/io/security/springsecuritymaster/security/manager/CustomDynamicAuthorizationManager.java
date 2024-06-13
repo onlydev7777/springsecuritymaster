@@ -35,10 +35,9 @@ public class CustomDynamicAuthorizationManager implements AuthorizationManager<R
 //    DynamicAuthorizationService dynamicAuthorizationService = new DynamicAuthorizationService(new MapBasedUrlRoleMapper());
     DynamicAuthorizationService dynamicAuthorizationService = new DynamicAuthorizationService(new PersistentUrlRoleMapper(resourcesRepository));
     this.mappings = dynamicAuthorizationService.getUrlRoleMappings().entrySet().stream()
-        .map(entry -> new RequestMatcherEntry(
+        .map(entry -> new RequestMatcherEntry<>(
             new MvcRequestMatcher(handlerMappingIntrospector, entry.getKey()),
-            customAuthorizationManager(entry.getValue()))
-        )
+            customAuthorizationManager(entry.getValue())))
         .collect(Collectors.toList());
   }
 

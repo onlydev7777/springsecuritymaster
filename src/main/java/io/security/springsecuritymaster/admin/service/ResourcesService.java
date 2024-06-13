@@ -7,7 +7,7 @@ public interface ResourcesService {
 
   List<Resources> getResources();
 
-  void createResources(Resources resources);
+  Resources createResources(Resources resources);
 
   Resources getResources(Long id);
 

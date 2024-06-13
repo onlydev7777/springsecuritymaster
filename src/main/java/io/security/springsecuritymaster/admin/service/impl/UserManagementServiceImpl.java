@@ -1,10 +1,12 @@
 package io.security.springsecuritymaster.admin.service.impl;
 
 import io.security.springsecuritymaster.admin.repository.AccountRoleRepository;
+import io.security.springsecuritymaster.admin.repository.RoleRepository;
 import io.security.springsecuritymaster.admin.service.UserManagementService;
 import io.security.springsecuritymaster.domain.dto.AccountDto;
 import io.security.springsecuritymaster.domain.entity.Account;
 import io.security.springsecuritymaster.domain.entity.AccountRole;
+import io.security.springsecuritymaster.domain.entity.Role;
 import io.security.springsecuritymaster.users.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class UserManagementServiceImpl implements UserManagementService {
   private final AccountRoleRepository accountRoleRepository;
   private final PasswordEncoder passwordEncoder;
   private final ModelMapper modelMapper;
+  private final RoleRepository roleRepository;
 
   @Override
   public List<Account> getUsers() {
@@ -38,18 +41,22 @@ public class UserManagementServiceImpl implements UserManagementService {
     account.setPassword(passwordEncoder.encode(accountDto.getPassword()));
     account.setAge(accountDto.getAge());
     if (accountDto.getRoles() != null) {
-      List<AccountRole> allByRoleRoleName = accountRoleRepository.findAllByRole_RoleNameIn(accountDto.getRoles());
-      allByRoleRoleName.forEach(accountRole -> accountRoleRepository.save(
-          createAccountRole(accountRole, account)
+      List<Role> noneMatchRoleList = roleRepository.findAllByRoleNameIn(accountDto.getRoles()).stream()
+          .filter(r -> r.getAccountRoleList().stream()
+              .noneMatch(accountRole -> accountRole.getAccount().equals(account)))
+          .toList();
+
+      accountRoleRepository.deleteByAccount(account);
+      noneMatchRoleList.forEach(role -> accountRoleRepository.save(
+          createAccountRole(role, account)
       ));
-//      account.setAccountRoleList(allByRoleRoleName);
     }
   }
 
-  private AccountRole createAccountRole(AccountRole accountRole, Account account) {
+  private AccountRole createAccountRole(Role role, Account account) {
     return AccountRole.builder()
         .account(account)
-        .role(accountRole.getRole())
+        .role(role)
         .build();
   }
 
