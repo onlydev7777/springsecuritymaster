@@ -29,16 +29,12 @@ public class CustomDynamicAuthorizationManager implements AuthorizationManager<R
   List<RequestMatcherEntry<AuthorizationManager<RequestAuthorizationContext>>> mappings;
   private final HandlerMappingIntrospector handlerMappingIntrospector;
   private final ResourcesRepository resourcesRepository;
+  private DynamicAuthorizationService dynamicAuthorizationService;
 
   @PostConstruct
   public void mapping() {
-//    DynamicAuthorizationService dynamicAuthorizationService = new DynamicAuthorizationService(new MapBasedUrlRoleMapper());
-    DynamicAuthorizationService dynamicAuthorizationService = new DynamicAuthorizationService(new PersistentUrlRoleMapper(resourcesRepository));
-    this.mappings = dynamicAuthorizationService.getUrlRoleMappings().entrySet().stream()
-        .map(entry -> new RequestMatcherEntry<>(
-            new MvcRequestMatcher(handlerMappingIntrospector, entry.getKey()),
-            customAuthorizationManager(entry.getValue())))
-        .collect(Collectors.toList());
+    dynamicAuthorizationService = new DynamicAuthorizationService(new PersistentUrlRoleMapper(resourcesRepository));
+    setMapping();
   }
 
   @Override
@@ -67,5 +63,18 @@ public class CustomDynamicAuthorizationManager implements AuthorizationManager<R
     } else {
       return new WebExpressionAuthorizationManager(role);
     }
+  }
+
+  public synchronized void reload() {
+    this.mappings.clear();
+    setMapping();
+  }
+
+  private void setMapping() {
+    this.mappings = dynamicAuthorizationService.getUrlRoleMappings().entrySet().stream()
+        .map(entry -> new RequestMatcherEntry<>(
+            new MvcRequestMatcher(handlerMappingIntrospector, entry.getKey()),
+            customAuthorizationManager(entry.getValue())))
+        .collect(Collectors.toList());
   }
 }

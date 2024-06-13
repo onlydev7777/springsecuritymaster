@@ -3,6 +3,7 @@ package io.security.springsecuritymaster.admin.service.impl;
 import io.security.springsecuritymaster.admin.repository.ResourcesRepository;
 import io.security.springsecuritymaster.admin.service.ResourcesService;
 import io.security.springsecuritymaster.domain.entity.Resources;
+import io.security.springsecuritymaster.security.manager.CustomDynamicAuthorizationManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ResourcesServiceImpl implements ResourcesService {
 
   private final ResourcesRepository resourcesRepository;
+  private final CustomDynamicAuthorizationManager authorizationManager;
 
   @Override
   public List<Resources> getResources() {
@@ -22,7 +24,9 @@ public class ResourcesServiceImpl implements ResourcesService {
 
   @Override
   public Resources createResources(Resources resources) {
-    return resourcesRepository.save(resources);
+    Resources saved = resourcesRepository.save(resources);
+    authorizationManager.reload();
+    return saved;
   }
 
   @Override
@@ -33,5 +37,6 @@ public class ResourcesServiceImpl implements ResourcesService {
   @Override
   public void deleteResources(Long id) {
     resourcesRepository.deleteById(id);
+    authorizationManager.reload();
   }
 }
